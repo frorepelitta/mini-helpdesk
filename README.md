@@ -122,10 +122,6 @@ curl -X POST http://localhost:8000/tickets/1/comments \
   -d '{"author": "agent", "body": "Проблема в работе, чиним"}'
 ```
 
-> Нюанс Windows: если Git Bash ломает кириллицу в `-d '...'`, сохрани JSON в файл
-> (например, `ticket.json`) и отправь его: `curl -X POST http://localhost:8000/tickets
-> -H "Content-Type: application/json" --data-binary @ticket.json`
-
 ## Структура проекта
 
 ```
@@ -150,11 +146,3 @@ requirements-dev.txt     — зависимости для разработки 
 setup.cfg                — настройка flake8
 .github/workflows/ci.yml — пайплайн CI
 ```
-
-## План развития
-
-- [ ] nginx как reverse proxy
-- [x] Мониторинг: Prometheus + Grafana
-- [x] Kubernetes (Deployment, Service, Ingress)
-- [x] CI/CD: GitHub Actions (линт, тесты, сборка образа)
-- [ ] LLM-ассистент: «предложить ответ агенту»
