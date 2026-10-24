@@ -18,6 +18,7 @@
 - **Python 3 + Flask** — API
 - **PostgreSQL** — хранение, обычные SQL-запросы без ORM
 - **Docker Compose** — запуск одной командой (api + база)
+- **Prometheus + Grafana** — метрики и дашборды
 
 ## Запуск
 
@@ -29,6 +30,17 @@ docker compose up
 
 Таблицы в базе создаются автоматически при первом запуске.
 API поднимется на http://localhost:8000
+
+## Мониторинг
+
+Поднимается вместе с приложением, отдельно настраивать ничего не нужно:
+
+- **Grafana** — http://localhost:3000 (логин/пароль `admin`/`admin`),
+  дашборд «Mini HelpDesk» подгружается автоматически:
+  RPS по кодам ответа, время ответа p95, число запросов, живость API
+- **Prometheus** — http://localhost:9090 (собирает метрики каждые 5 секунд)
+- Метрики API в сыром виде — http://localhost:8000/metrics
+- Метрики PostgreSQL собирает postgres-exporter
 
 ## Примеры запросов
 
@@ -66,13 +78,17 @@ app.py               — всё приложение: роуты и SQL-запр
 schema.sql           — создание таблиц (выполняется при старте)
 requirements.txt     — зависимости Python
 Dockerfile           — образ для api
-docker-compose.yml   — api + postgres
+docker-compose.yml   — api + postgres + prometheus + grafana
+monitoring/
+  prometheus/prometheus.yml          — что и откуда собирать
+  grafana/provisioning/              — автоподключение источника данных и дашборда
+  grafana/dashboards/mini-helpdesk.json
 ```
 
 ## План развития
 
 - [ ] nginx как reverse proxy
-- [ ] Мониторинг: Prometheus + Grafana
+- [x] Мониторинг: Prometheus + Grafana
 - [ ] Kubernetes (Deployment, Service, Ingress)
 - [ ] GitLab CI/CD: автотесты и автодеплой
 - [ ] LLM-ассистент: «предложить ответ агенту»

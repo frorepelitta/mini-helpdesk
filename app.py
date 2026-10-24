@@ -5,6 +5,7 @@ import time
 import psycopg2
 import psycopg2.extras
 from flask import Flask, g, jsonify, request
+from prometheus_flask_exporter import PrometheusMetrics
 
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
@@ -15,6 +16,8 @@ ALLOWED_STATUSES = ("open", "in_progress", "resolved")
 app = Flask(__name__)
 # чтобы curl показывал кириллицу как текст, а не \u041d...
 app.json.ensure_ascii = False
+# HTTP-метрики приложения на /metrics (RPS, коды ответов, время запросов)
+metrics = PrometheusMetrics(app)
 
 
 def get_db():
