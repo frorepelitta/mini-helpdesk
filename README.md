@@ -1,5 +1,7 @@
 # Mini HelpDesk
 
+[![CI](https://github.com/frorepelitta/mini-helpdesk/actions/workflows/ci.yml/badge.svg)](https://github.com/frorepelitta/mini-helpdesk/actions/workflows/ci.yml)
+
 Учебный пет-проект — простая система заявок (тикетов), как в сервис-деске.
 
 ## Что умеет API
@@ -20,6 +22,7 @@
 - **Docker Compose** — запуск одной командой (api + база)
 - **Prometheus + Grafana** — метрики и дашборды
 - **Kubernetes** — деплой приложения в кластер (Deployment, Service, Ingress)
+- **GitHub Actions** — CI: линт, автотесты, сборка docker-образа
 
 ## Запуск
 
@@ -77,6 +80,23 @@ kubectl delete pod <имя-пода>     # удалить под — Kubernetes 
                                   # трафик при этом не падает
 ```
 
+## CI (GitHub Actions)
+
+При каждом пуше и pull request'е автоматически запускается пайплайн (`.github/workflows/ci.yml`):
+
+1. **Линт** — flake8 проверяет код
+2. **Тесты** — pytest гоняет 9 тестов против PostgreSQL,
+   который поднимается отдельным service-контейнером
+3. **Сборка** — docker-образ приложения собирается (пушится только если тесты прошли)
+
+Локально тесты запускаются так (нужен любой PostgreSQL, доступный по DATABASE_URL):
+
+```bash
+python -m venv .venv
+.venv/Scripts/pip install -r requirements.txt -r requirements-dev.txt   # Linux: .venv/bin/pip
+.venv/Scripts/python -m pytest -v
+```
+
 ## Примеры запросов
 
 ```bash
@@ -123,6 +143,12 @@ k8s/
   postgres.yml           — база: PVC + Deployment + Service
   api.yml                — API: Deployment (2 пода, пробы) + Service
   ingress.yml            — входящий трафик → api
+tests/
+  conftest.py            — фикстура pytest: чистая база + тестовый клиент
+  test_api.py            — тесты всех эндпоинтов
+requirements-dev.txt     — зависимости для разработки (pytest, flake8)
+setup.cfg                — настройка flake8
+.github/workflows/ci.yml — пайплайн CI
 ```
 
 ## План развития
@@ -130,5 +156,5 @@ k8s/
 - [ ] nginx как reverse proxy
 - [x] Мониторинг: Prometheus + Grafana
 - [x] Kubernetes (Deployment, Service, Ingress)
-- [ ] GitLab CI/CD: автотесты и автодеплой
+- [x] CI/CD: GitHub Actions (линт, тесты, сборка образа)
 - [ ] LLM-ассистент: «предложить ответ агенту»
