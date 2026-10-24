@@ -1,0 +1,18 @@
+# Ingress: входящий трафик снаружи кластера -> сервис api.
+# Работает вместе с ingress-контроллером nginx (см. README).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8000

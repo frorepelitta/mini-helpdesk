@@ -19,6 +19,7 @@
 - **PostgreSQL** — хранение, обычные SQL-запросы без ORM
 - **Docker Compose** — запуск одной командой (api + база)
 - **Prometheus + Grafana** — метрики и дашборды
+- **Kubernetes** — деплой приложения в кластер (Deployment, Service, Ingress)
 
 ## Запуск
 
@@ -41,6 +42,40 @@ API поднимется на http://localhost:8000
 - **Prometheus** — http://localhost:9090 (собирает метрики каждые 5 секунд)
 - Метрики API в сыром виде — http://localhost:8000/metrics
 - Метрики PostgreSQL собирает postgres-exporter
+
+## Kubernetes
+
+Приложение деплоится в кластер Kubernetes (манифесты в папке `k8s/`).
+
+**Как запустить** (Kubernetes из Docker Desktop: Settings → Kubernetes → Enable):
+
+```bash
+docker compose build              # собрать образ, он виден кластеру
+
+# ingress-контроллер (один раз)
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.1/deploy/static/provider/cloud/deploy.yaml
+
+kubectl apply -f k8s/             # база + api + ingress
+```
+
+API станет доступен на http://localhost (порт 80, через ingress-nginx).
+
+**Что в манифестах:**
+
+- `secret.yml` — параметры подключения к БД (в реальности — Vault/Sealed Secrets)
+- `postgres.yml` — база: PersistentVolumeClaim + Deployment + Service
+- `api.yml` — API: Deployment на 2 пода + Service, readiness/liveness пробы на `/health`
+- `ingress.yml` — входящий трафик → сервис api
+
+**Полезные команды:**
+
+```bash
+kubectl get pods                  # статус подов
+kubectl scale deployment api --replicas=3   # масштабирование без даунтайма
+kubectl logs -l app=api           # логи приложения
+kubectl delete pod <имя-пода>     # удалить под — Kubernetes сам создаст новый,
+                                  # трафик при этом не падает
+```
 
 ## Примеры запросов
 
@@ -83,12 +118,17 @@ monitoring/
   prometheus/prometheus.yml          — что и откуда собирать
   grafana/provisioning/              — автоподключение источника данных и дашборда
   grafana/dashboards/mini-helpdesk.json
+k8s/
+  secret.yml             — параметры БД (Secret)
+  postgres.yml           — база: PVC + Deployment + Service
+  api.yml                — API: Deployment (2 пода, пробы) + Service
+  ingress.yml            — входящий трафик → api
 ```
 
 ## План развития
 
 - [ ] nginx как reverse proxy
 - [x] Мониторинг: Prometheus + Grafana
-- [ ] Kubernetes (Deployment, Service, Ingress)
+- [x] Kubernetes (Deployment, Service, Ingress)
 - [ ] GitLab CI/CD: автотесты и автодеплой
 - [ ] LLM-ассистент: «предложить ответ агенту»
